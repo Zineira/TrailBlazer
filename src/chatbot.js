@@ -40,7 +40,7 @@ const availableFunctions = {
                 {
                     textQuery: query,
                     languageCode: "en",
-                    maxResultCount: 5
+                    maxResultCount: 3
                 },
                 {
                     headers: {
@@ -63,7 +63,7 @@ const availableFunctions = {
                 }
             );
 
-            if (!response.data.places?.length) return "No places found";
+            if (!response.data.places?.length) return "No places found in Ermesinde area";
 
             return response.data.places.map(place => {
                 const openNow = place.currentOpeningHours?.openNow ? '🟢 Open' : '🔴 Closed';
@@ -83,6 +83,26 @@ const availableFunctions = {
         } catch (error) {
             console.error('Places API error:', error.response?.data || error.message);
             return "Error searching for places. Please try again.";
+        }
+    },
+    getGeoLocation: async () => {
+        try {
+            const response = await axios.get('http://ip-api.com/json/');
+            const data = response.data;
+            
+            if (data.status === 'success') {
+                return `📍 Your Location:
+🌍 Country: ${data.country}
+🏙️ City: ${data.city}
+📍 Region: ${data.regionName}
+📌 Coordinates: ${data.lat}, ${data.lon}
+🌐 IP: ${data.query}`;
+            } else {
+                return "Could not determine location";
+            }
+        } catch (error) {
+            console.error('Geolocation error:', error);
+            return "Error getting location information";
         }
     }
 };
@@ -145,6 +165,14 @@ const functionDefinitions = [
                 }
             },
             required: ["query"]
+        }
+    },
+    {
+        name: "getGeoLocation",
+        description: "Get user's geolocation based on IP address",
+        parameters: {
+            type: "object",
+            properties: {} // No parameters needed
         }
     }
 ];
