@@ -10,5 +10,5 @@ Test the ChatBot
 
 ### `node chatbot.js`
 
-1-Try asking about the weather.\n
+1-Try asking about the weather.`\n`
 2-Ask about Restaurants
