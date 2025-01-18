@@ -13,183 +13,6 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-// Keep track of conversation history
-let conversationHistory = [];
-
-// Define available functions
-const availableFunctions = {
-  getCurrentWeather: async ({ location }) => {
-    return `Weather in ${location}: 22°C, Sunny`; // Mock implementation
-  },
-  getTime: async () => {
-    return `Current time: ${new Date().toLocaleTimeString()}`;
-  },
-  findPlace: async ({
-    query,
-    location,
-    radius,
-    language,
-    minPrice,
-    maxPrice,
-    openNow,
-    placeType,
-    pageToken,
-  }) => {
-    try {
-      const requestBody = {
-        textQuery: query,
-        languageCode: language || "en",
-        maxResultCount: 5,
-      };
-
-      if (location) {
-        requestBody.locationBias = {
-          circle: {
-            center: {
-              latitude: location.latitude,
-              longitude: location.longitude,
-            },
-            radius: radius || 5000.0,
-          },
-        };
-      }
-
-      if (pageToken) {
-        requestBody.pageToken = pageToken;
-      }
-
-      const response = await axios.post(
-        "https://places.googleapis.com/v1/places:searchText",
-        requestBody,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-            "X-Goog-FieldMask": [
-              "places.id",
-              "places.displayName",
-              "places.formattedAddress",
-              "places.priceLevel",
-              "places.rating",
-              "places.userRatingCount",
-              "places.currentOpeningHours",
-              "places.primaryTypeDisplayName",
-              "nextPageToken",
-            ].join(","),
-          },
-        }
-      );
-
-      if (!response.data.places?.length) return "No places found";
-
-      let result = response.data.places
-        .filter((place) => {
-          // Ensure Place ID exists
-          if (!place.id) return false;
-
-          // Filter based on additional criteria
-          if (minPrice !== undefined && place.priceLevel?.length < minPrice)
-            return false;
-          if (maxPrice !== undefined && place.priceLevel?.length > maxPrice)
-            return false;
-          if (openNow && !place.currentOpeningHours?.openNow) return false;
-          if (placeType && place.primaryTypeDisplayName?.text !== placeType)
-            return false;
-          return true;
-        })
-        .map((place) => {
-          const rating = place.rating
-            ? `⭐ ${place.rating}/5 (${place.userRatingCount} reviews)`
-            : "No ratings";
-          const openNowStatus = place.currentOpeningHours?.openNow
-            ? "🟢 Open"
-            : "🔴 Closed";
-
-          return {
-            id: place.id,
-            details: [
-              `📍 ${place.displayName?.text || "Unnamed Place"}`,
-              `📮 ${place.formattedAddress || "No address"}`,
-              `${openNowStatus} | ${rating}`,
-            ]
-              .filter(Boolean)
-              .join("\n"),
-          };
-        });
-
-      if (response.data.nextPageToken) {
-        result.push({
-          id: null,
-          details: `More results available. Use pageToken: ${response.data.nextPageToken}`,
-        });
-      }
-
-      return result;
-    } catch (error) {
-      console.error("Places API error:", error.response?.data || error.message);
-      return "Error searching for places";
-    }
-  },
-  placeDetails: async ({ placeId }) => {
-    if (!placeId) return "Invalid Place ID";
-
-    try {
-      const response = await axios.get(
-        `https://places.googleapis.com/v1/places/${placeId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-            "X-Goog-FieldMask": [
-              "places.id",
-              "places.displayName",
-              "places.formattedAddress",
-              "places.rating",
-              "places.userRatingCount",
-              "places.currentOpeningHours",
-              "places.priceLevel",
-              "places.editorialSummary",
-              "places.photos",
-              "places.primaryTypeDisplayName",
-              "places.websiteUri",
-              "places.internationalPhoneNumber",
-            ].join(","),
-          },
-        }
-      );
-
-      const place = response.data;
-      const openNow = place.currentOpeningHours?.openNow
-        ? "🟢 Open"
-        : "🔴 Closed";
-      const rating = place.rating
-        ? `⭐ ${place.rating}/5 (${place.userRatingCount} reviews)`
-        : "No ratings";
-      const price = "💰".repeat(place.priceLevel?.length || 0) || "Price N/A";
-
-      return [
-        `📍 ${place.displayName?.text || "Unnamed Place"}`,
-        `📮 ${place.formattedAddress || "No address"}`,
-        `📞 ${place.internationalPhoneNumber || "No phone"}`,
-        `${openNow} | ${rating} | ${price}`,
-        `🏷️ ${place.primaryTypeDisplayName?.text || "No category"}`,
-        place.websiteUri ? `🌐 ${place.websiteUri}` : "",
-        place.editorialSummary?.text
-          ? `info: ${place.editorialSummary.text}`
-          : "",
-      ]
-        .filter(Boolean)
-        .join("\n");
-    } catch (error) {
-      console.error("Place Details API error:", error.response?.data || error);
-      if (error.response?.status === 404) {
-        return "Place ID not found or expired. Please try searching for the place again.";
-      }
-      return "Error fetching place details";
-    }
-  },
-};
-
 const PLACE_TYPES = [
   "accounting",
   "airport",
@@ -288,129 +111,161 @@ const PLACE_TYPES = [
   "veterinary_care",
   "zoo",
 ];
+// Keep track of conversation history
+let conversationHistory = [];
 
-// Define function specifications for OpenAI
+// Define available functions
+const availableFunctions = {
+  getCurrentWeather: async ({ location }) => {
+    return `Weather in ${location}: 22°C, Sunny`; // Mock implementation
+  },
+  getTime: async () => {
+    return `Current time: ${new Date().toLocaleTimeString()}`;
+  },
+  placesNearby: async (
+    app_context,
+    location,
+    type,
+    radius,
+    keyword,
+    language,
+    min_price,
+    max_price,
+    name,
+    open_now,
+    rank_by,
+    page_token
+  ) => {
+    return `Places nearby: 5 restaurants, 3 cafes, 2 parks`; // Mock implementation
+  },
+};
+
+TOOL_GET_CURRENT_WEATHER = {
+  name: "getCurrentWeather",
+  description: "Get the current weather in a location",
+  parameters: {
+    type: "object",
+    properties: {
+      location: {
+        type: "string",
+        description: "The city and state, e.g. San Francisco, CA",
+      },
+    },
+    required: ["location"],
+  },
+};
+TOOL_GET_TIME = {
+  name: "getTime",
+  description: "Get the current time",
+  parameters: {
+    type: "object",
+    properties: {},
+  },
+};
+
+TOOL_PLACES_NEARBY = {
+  name: "searchPlaces",
+  description:
+    "Search for places using Google Places API with various filtering options",
+  parameters: {
+    type: "object",
+    properties: {
+      type: {
+        type: "string",
+        description: "Type of place to search for",
+        enum: PLACE_TYPES,
+      },
+      location: {
+        type: "object",
+        properties: {
+          latitude: { type: "number", minimum: -90, maximum: 90 },
+          longitude: { type: "number", minimum: -180, maximum: 180 },
+        },
+        required: ["latitude", "longitude"],
+        description: "Geographic coordinates of the search center point",
+      },
+      radius: {
+        type: "integer",
+        description: "Search radius in meters",
+        minimum: 1,
+        maximum: 50000,
+      },
+      keyword: {
+        type: "string",
+        description: "Term to match against all content",
+      },
+      language: {
+        type: "string",
+        description: "The language code for the results (e.g., 'en', 'pt')",
+      },
+      minPrice: {
+        type: "integer",
+        minimum: 0,
+        maximum: 4,
+        description:
+          "Minimum price level (0=most affordable, 4=most expensive)",
+      },
+      maxPrice: {
+        type: "integer",
+        minimum: 0,
+        maximum: 4,
+        description:
+          "Maximum price level (0=most affordable, 4=most expensive)",
+      },
+      name: {
+        type: "string",
+        description: "Terms to match against place names",
+      },
+      openNow: {
+        type: "boolean",
+        description: "Return only places that are currently open",
+      },
+      rankBy: {
+        type: "string",
+        enum: ["prominence", "distance"],
+        description: "Order in which to rank results",
+      },
+      pageToken: {
+        type: "string",
+        description: "Token for retrieving the next page of results",
+      },
+    },
+    required: ["location"],
+  },
+};
+/**
+ * Function definitions for OpenAI API tools
+ * These tools allow the chatbot to:
+ * - Get weather information
+ * - Get current time
+ * - Search for nearby places
+ */
 const functionDefinitions = [
-  {
-    name: "getCurrentWeather",
-    description: "Get the current weather in a location",
-    parameters: {
-      type: "object",
-      properties: {
-        location: {
-          type: "string",
-          description: "The city and state, e.g. San Francisco, CA",
-        },
-      },
-      required: ["location"],
-    },
-  },
-  {
-    name: "getTime",
-    description: "Get the current time",
-    parameters: {
-      type: "object",
-      properties: {},
-    },
-  },
-  {
-    name: "findPlace",
-    description:
-      "Search for places using Google Places API with various filtering options",
-    parameters: {
-      type: "object",
-      properties: {
-        query: {
-          type: "string",
-          description:
-            "Search query for finding places (e.g., 'restaurants in Porto')",
-        },
-        location: {
-          type: "object",
-          properties: {
-            latitude: {
-              type: "number",
-              minimum: -90,
-              maximum: 90,
-              description: "Latitude coordinate",
-            },
-            longitude: {
-              type: "number",
-              minimum: -180,
-              maximum: 180,
-              description: "Longitude coordinate",
-            },
-          },
-          description: "Geographic coordinates for location bias",
-        },
-        radius: {
-          type: "integer",
-          minimum: 1,
-          maximum: 50000,
-          description: "Search radius in meters (max 50000)",
-        },
-        language: {
-          type: "string",
-          description: "Language code for results (e.g., 'en', 'pt')",
-        },
-        minPrice: {
-          type: "integer",
-          minimum: 0,
-          maximum: 4,
-          description: "Minimum price level (0=Free to 4=Luxury)",
-        },
-        maxPrice: {
-          type: "integer",
-          minimum: 0,
-          maximum: 4,
-          description: "Maximum price level (0=Free to 4=Luxury)",
-        },
-        openNow: {
-          type: "boolean",
-          description: "Filter for currently open places",
-        },
-        placeType: {
-          type: "string",
-          enum: PLACE_TYPES,
-          description: "Specific type of place to search for",
-        },
-        pageToken: {
-          type: "string",
-          description: "Token for fetching next page of results",
-        },
-      },
-      required: ["query"],
-    },
-  },
-  {
-    name: "placeDetails",
-    description:
-      "Get detailed information about a specific place using its Place ID",
-    parameters: {
-      type: "object",
-      properties: {
-        placeId: {
-          type: "string",
-          description: "The Google Places ID of the location",
-        },
-      },
-      required: ["placeId"],
-    },
-  },
+  TOOL_GET_CURRENT_WEATHER,
+  TOOL_GET_TIME,
+  TOOL_PLACES_NEARBY,
 ];
 
+/**
+ * Handles function calls from OpenAI API responses
+ * @param {string} prompt - User input message
+ * @returns {Promise<string>} Bot's response or error message
+ */
 const handleFunctionCall = async (prompt) => {
   try {
+    // Initialize conversation array with system prompt and user message
     let messages = [
       {
         role: "system",
         content:
           "You are a helpful assistant that can search for places and provide information.",
       },
-      ...conversationHistory,
-      { role: "user", content: prompt },
+      ...conversationHistory, // Add previous conversation context
+      { role: "user", content: prompt }, // Add current user message
     ];
 
+    // Main processing loop
+    // Continues until getting final response or hitting error
     while (true) {
       console.log("\n🔄 Sending request to OpenAI...");
       const response = await openai.chat.completions.create({
@@ -429,9 +284,12 @@ const handleFunctionCall = async (prompt) => {
       if (responseMessage.function_call) {
         console.log("\n🔧 Function call detected");
         const functionName = responseMessage.function_call.name;
-        const functionArgs = JSON.parse(
-          responseMessage.function_call.arguments
-        );
+        let functionArgs;
+        try {
+          functionArgs = JSON.parse(responseMessage.function_call.arguments);
+        } catch (err) {
+          throw new Error("Error parsing function arguments: " + err.message);
+        }
 
         console.log(`\n📝 Executing: ${functionName}`);
         console.log("Arguments:", JSON.stringify(functionArgs, null, 2));
@@ -484,7 +342,7 @@ async function chat() {
       }
 
       const response = await handleFunctionCall(input);
-      console.log("Bot:", response);
+      console.log("Bot: ", response);
       askQuestion();
     });
   };
