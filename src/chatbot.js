@@ -116,12 +116,6 @@ let conversationHistory = [];
 
 // Define available functions
 const availableFunctions = {
-  getCurrentWeather: async ({ location }) => {
-    return `Weather in ${location}: 22°C, Sunny`; // Mock implementation
-  },
-  getTime: async () => {
-    return `Current time: ${new Date().toLocaleTimeString()}`;
-  },
   placesNearby: async (
     app_context,
     location,
@@ -139,30 +133,6 @@ const availableFunctions = {
     return `Places nearby: 5 restaurants, 3 cafes, 2 parks`; // Mock implementation
   },
 };
-
-TOOL_GET_CURRENT_WEATHER = {
-  name: "getCurrentWeather",
-  description: "Get the current weather in a location",
-  parameters: {
-    type: "object",
-    properties: {
-      location: {
-        type: "string",
-        description: "The city and state, e.g. San Francisco, CA",
-      },
-    },
-    required: ["location"],
-  },
-};
-TOOL_GET_TIME = {
-  name: "getTime",
-  description: "Get the current time",
-  parameters: {
-    type: "object",
-    properties: {},
-  },
-};
-
 TOOL_PLACES_NEARBY = {
   name: "searchPlaces",
   description:

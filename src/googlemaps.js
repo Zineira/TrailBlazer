@@ -60,8 +60,13 @@ nearbySearch(parameters)
     let i = 1;
     const places = response.places || [];
     places.forEach((place) => {
+      console.log(place);
       console.log(`\n${i}: `);
       console.log(`Place ID: ${place.name}`);
+      console.log(`Rating: ${place.rating}`);
+      console.log(`User ratings total: ${place.userRatingsTotal}`);
+      console.log(`Price level: ${place.priceLevel}`);
+      console.log(`Open: ${place.currentOpeningHours.openNow}`);
       console.log(`Name: ${place.displayName.text}`);
       console.log(`Types: ${place.types}`);
       console.log(`Address: ${place.formattedAddress}\n`);
@@ -70,16 +75,13 @@ nearbySearch(parameters)
   })
   .catch(console.error);
 
-module.exports = {
-  nearbySearch,
-};
-
 const placesSearchFunction = {
   name: "searchNearbyPlaces",
   description:
     "Search for places near a specific location using Google Places API",
   parameters: {
     type: "object",
+    required: ["latitude", "longitude"],
     properties: {
       latitude: {
         type: "number",
@@ -91,8 +93,8 @@ const placesSearchFunction = {
       },
       radius: {
         type: "number",
-        description: "Search radius in meters",
-        default: null,
+        description:
+          "Optional: Search radius in meters. If not provided, no radius restriction will be applied",
       },
       placeType: {
         type: "string",
@@ -116,20 +118,22 @@ const placesSearchFunction = {
         minimum: 1,
         maximum: 20,
       },
-
       rankBy: {
         type: "string",
         enum: ["RATING", "DISTANCE", "POPULARITY"],
         default: "RATING",
         description: "How to rank the search results",
       },
-
       language: {
         type: "string",
         description: "Language code for results (e.g., en-US, pt-PT)",
         default: "en",
       },
     },
-    required: ["latitude", "longitude"],
   },
+};
+
+module.exports = {
+  nearbySearch,
+  placesSearchFunction,
 };
