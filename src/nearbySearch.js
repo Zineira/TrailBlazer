@@ -26,8 +26,8 @@ async function nearbySearch(
     locationRestriction: {
       circle: {
         center: {
-          latitude: latitude,
-          longitude: longitude,
+          latitude: 41.211476506029676,
+          longitude: -8.54857068868688,
         },
         radius: radius,
       },
@@ -37,7 +37,6 @@ async function nearbySearch(
     languageCode: language,
   };
 
-  console.log(JSON.stringify(parameters.locationRestriction.circle.center));
   if (!apiKey) {
     throw new Error("Google Maps API key not found in environment variables");
   }
@@ -50,8 +49,7 @@ async function nearbySearch(
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask":
-            "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.types,places.priceLevel,places.currentOpeningHours",
+          "X-Goog-FieldMask": "*",
         },
       }
     );
@@ -89,29 +87,29 @@ const nearby_search_tool = {
         placeType: {
           type: "string",
           enum: [
-            "Barbecue_area",
+            "barbecue_area",
             "Childrens_camp",
-            "Cycling_park",
-            "Hiking_area",
-            "Picnic_ground",
-            "Visitor_center",
+            "bycling_park",
+            "biking_area",
+            "bicnic_ground",
+            "bisitor_center",
             "public_bath",
             "public_bathroom",
             "stable",
-            "Barbecue_restaurant",
-            "Cafe",
-            "Coffee_shop",
-            "Ice_cream_shop",
-            "Bar",
-            "Pub",
-            "Buffet_restaurant",
-            "Bakery",
+            "barbecue_restaurant",
+            "cafe",
+            "coffee_shop",
+            "ice_cream_shop",
+            "bar",
+            "pub",
+            "buffet_restaurant",
+            "bakery",
             "drugstore",
             "pharmacy",
-            "Campground",
-            "Camping_cabin",
-            "RV_park",
-            "Cottage",
+            "campground",
+            "camping_cabin",
+            "rv_park",
+            "cottage",
             "beach",
             "laundry",
             "athletic_field",
@@ -206,5 +204,3 @@ module.exports = {
   nearbySearch,
   nearby_search_tool,
 };
-
-// ###  TEST  ###

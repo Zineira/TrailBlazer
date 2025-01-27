@@ -1,7 +1,7 @@
 const OpenAI = require("openai");
 require("dotenv").config();
 const readline = require("readline");
-const { nearbySearch, nearby_search_tool } = require("./googlemaps"); // import das tools
+const { nearbySearch, nearby_search_tool } = require("./nearbySearch"); // import das tools
 
 const openai = new OpenAI({
   apiKey: process.env.REACT_APP_OPEN_AI_API_KEY,
@@ -10,7 +10,7 @@ const openai = new OpenAI({
 const messages = [
   {
     role: "system",
-    content: "You are a helpful assistant that can search for places nearby.",
+    content: "You are a helpful guide that can search for places nearby.",
   },
 ];
 
@@ -35,80 +35,6 @@ const callFunction = async (name, args) => {
   }
 };
 
-const handleResponse = async (response) => {
-  // Log complete OpenAI response for debugging
-  console.log("\nOpenAI Response:", {
-    toolCalls: response.tool_calls,
-    content: response.content,
-    role: response.role,
-  });
-
-  if (response.tool_calls) {
-    console.log(
-      "\nTool calls detected:",
-      response.tool_calls.map((t) => t.function.name)
-    );
-
-    for (const toolCall of response.tool_calls) {
-      const functionName = toolCall.function.name;
-      let result;
-
-      // Only execute nearby search when specifically requested
-      if (functionName === "nearbySearch") {
-        console.log(
-          "\nArguments",
-          JSON.parse(toolCall.function.arguments),
-          "\n"
-        );
-        try {
-          const args = JSON.parse(toolCall.function.arguments);
-          result = await nearbySearch(
-            args.latitude,
-            args.longitude,
-            args.radius,
-            args.placeType,
-            args.maxResults,
-            args.rankBy,
-            args.language
-          );
-        } catch (err) {
-          console.error("Nearby search error:", err);
-          result = { error: err.message, places: {} };
-        }
-      }
-
-      // Handle places data formatting
-      let placesInfo = null;
-      if (result?.places && Object.keys(result.places).length > 0) {
-        try {
-          placesInfo = result.places.map((place) => ({
-            name: place.displayName?.text,
-            address: place.formattedAddress,
-            rating: place.rating,
-            types: place.types,
-          }));
-        } catch (err) {
-          console.error("Error formatting places:", err);
-          placesInfo = [];
-        }
-      }
-
-      console.log("\nFormatted places info:", placesInfo);
-
-      // Add function result to messages
-      messages.push({
-        role: "function",
-        name: functionName,
-        tool_call_id: toolCall.id,
-        content: JSON.stringify(placesInfo || result),
-      });
-    }
-  } else {
-    console.log("\nBot response (no tools called):", response.content);
-    messages.push({ role: "assistant", content: response.content });
-  }
-};
-
 async function handleUserInput(userInput) {
   try {
     messages.push({ role: "user", content: userInput });
@@ -117,10 +43,40 @@ async function handleUserInput(userInput) {
       model: "gpt-4o-mini",
       messages: messages,
       tools: tools,
+      store: true,
     });
 
-    const response = completion.choices[0].message;
-    await handleResponse(response);
+    // Check if there's a tool call
+    if (completion.choices[0].message.tool_calls) {
+      const toolCall = completion.choices[0].message.tool_calls[0];
+      const args = JSON.parse(toolCall.function.arguments);
+
+      console.log("tool: ", toolCall.function.name);
+      console.log("args: ", args);
+
+      const result = await callFunction(toolCall.function.name, args);
+      console.log(result);
+
+      messages.push(completion.choices[0].message);
+      messages.push({
+        role: "tool",
+        tool_call_id: toolCall.id,
+        content: JSON.stringify(result),
+      });
+
+      const completion2 = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: messages,
+        tools: tools,
+        store: true,
+      });
+
+      console.log(completion2.choices[0].message.content);
+    } else {
+      // Handle regular chat responses
+      console.log(completion.choices[0].message.content);
+      messages.push(completion.choices[0].message);
+    }
 
     return true;
   } catch (error) {
