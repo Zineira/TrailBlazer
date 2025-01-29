@@ -13,12 +13,16 @@ async function nearbySearch(
   latitude,
   longitude,
   radius = 5000,
-  placeType = "restaurant",
+  placeType,
   maxResults = 5,
   rankBy = "POPULARITY",
   language = "pt-PT"
 ) {
   const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Google Maps API key not found in environment variables");
+  }
 
   // Format parameters exactly as Google Places API v1 expects
   const parameters = {
@@ -26,8 +30,8 @@ async function nearbySearch(
     locationRestriction: {
       circle: {
         center: {
-          latitude: 41.211476506029676,
-          longitude: -8.54857068868688,
+          latitude: latitude, // Use passed parameter instead of hardcoded value
+          longitude: longitude, // Use passed parameter instead of hardcoded value
         },
         radius: radius,
       },
@@ -37,10 +41,6 @@ async function nearbySearch(
     languageCode: language,
   };
 
-  if (!apiKey) {
-    throw new Error("Google Maps API key not found in environment variables");
-  }
-
   try {
     const response = await axios.post(
       "https://places.googleapis.com/v1/places:searchNearby",
@@ -49,15 +49,16 @@ async function nearbySearch(
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": "*",
+          "X-Goog-FieldMask": "places.displayName", // Request all available fields
         },
       }
     );
 
+    console.log("API Response:", response.data); // Add debugging log
     return response.data;
   } catch (error) {
-    console.error("API Error Details:", error.response?.data);
-    throw new Error(`Nearby search failed: ${error.message}`);
+    console.error("Places API Error:", error.response?.data || error.message);
+    throw error;
   }
 }
 
