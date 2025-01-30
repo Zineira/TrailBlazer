@@ -10,10 +10,10 @@ dotenv.config();
  * @param {string} apiKey Google Maps API key
  */
 async function nearbySearch(
-  latitude,
-  longitude,
-  radius = 5000,
-  placeType,
+  latitude = 41.211,
+  longitude = -8.548,
+  radius = 1000,
+  placeType = "restaurant",
   maxResults = 5,
   rankBy = "POPULARITY",
   language = "pt-PT"
@@ -30,8 +30,8 @@ async function nearbySearch(
     locationRestriction: {
       circle: {
         center: {
-          latitude: latitude, // Use passed parameter instead of hardcoded value
-          longitude: longitude, // Use passed parameter instead of hardcoded value
+          latitude: 41.211,
+          longitude: -8.548,
         },
         radius: radius,
       },
@@ -49,15 +49,16 @@ async function nearbySearch(
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": "places.displayName", // Request all available fields
+          "X-Goog-FieldMask": "places.displayName, places.name", // Request all available fields
         },
       }
     );
 
-    console.log("API Response:", response.data); // Add debugging log
     return response.data;
   } catch (error) {
     console.error("Places API Error:", error.response?.data || error.message);
+    console.error(error.details);
+
     throw error;
   }
 }
@@ -139,6 +140,7 @@ const nearby_search_tool = {
             "meal_takeaway",
             "mediterranean_restaurant",
             "pizza_restaurant",
+            "restaurant",
             "seafood_restaurant",
             "steak_house",
             "vegetarian_restaurant",

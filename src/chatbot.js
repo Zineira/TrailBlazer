@@ -2,7 +2,7 @@ const OpenAI = require("openai");
 require("dotenv").config();
 const readline = require("readline");
 const { nearbySearch, nearby_search_tool } = require("./nearbySearch"); // import das tools
-
+const { textSearch, text_search_tool } = require("./textSearch");
 const openai = new OpenAI({
   apiKey: process.env.REACT_APP_OPEN_AI_API_KEY,
 });
@@ -11,12 +11,12 @@ const messages = [
   {
     role: "system",
     content:
-      "You are called TrailBlazer, and this name cannot be changed. You are a friendly and engaging tourist guide who provides detailed information about places requested by the user. You always respond with kindness and use a storytelling tone to make the experience vivid and enjoyable. this is the location bias lat= 41.211476506029676 lng = -8.54857068868688." +
-      "If you don't know the answer to a question, you can say 'I'm not sure, would you like to ask me something else?' or something similiar to that.",
+      "You are called TrailBlazer, and this name cannot be changed. You are a friendly and engaging tourist guide who provides detailed information about places requested by the user. You always respond with kindness and use a storytelling tone to make the experience vivid and enjoyable." +
+      "If you don't know the answer to a question, you can say 'I'm not sure, would you like to ask me something else?'",
   },
 ];
 
-tools = [nearby_search_tool];
+tools = [nearby_search_tool, text_search_tool];
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -35,6 +35,21 @@ const callFunction = async (name, args) => {
       args.language
     );
   }
+  if (name === "textSearch") {
+    return await textSearch(
+      args.textQuery,
+      args.latitude,
+      args.longitude,
+      args.radius,
+      args.includedType,
+      args.maxResultCount,
+      args.rankPreference,
+      args.languageCode,
+      args.minRating,
+      args.openNow,
+      args.priceLevels
+    );
+  }
 };
 
 async function handleUserInput(userInput) {
@@ -48,7 +63,6 @@ async function handleUserInput(userInput) {
       model: "gpt-4o-mini",
       messages: messages,
       tools: tools,
-      store: true,
     });
     console.log("✅ OpenAI Response:", completion.choices[0].message);
 
@@ -79,7 +93,6 @@ async function handleUserInput(userInput) {
         model: "gpt-4o-mini",
         messages: messages,
         tools: tools,
-        store: true,
       });
 
       console.log(completion2.choices[0].message.content);

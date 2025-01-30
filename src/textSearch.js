@@ -6,7 +6,7 @@ async function textSearch(
   textQuery,
   latitude,
   longitude,
-  radius = 5000,
+  radius = 1000,
   includedType = "restaurant",
   maxResultCount = 5,
   rankPreference = "RELEVANCE",
@@ -24,8 +24,8 @@ async function textSearch(
     locationBias: {
       circle: {
         center: {
-          latitude: latitude,
-          longitude: longitude,
+          latitude: 41.211,
+          longitude: -8.548,
         },
         radius: radius,
       },
@@ -37,8 +37,6 @@ async function textSearch(
     priceLevels: priceLevels,
     maxResultCount: maxResultCount,
   };
-  console.log(JSON.stringify(parameters.locationBias.circle.center));
-  console.log(parameters);
 
   if (!apiKey) {
     throw new Error("Google Maps API key not found in environment variables");
@@ -52,7 +50,7 @@ async function textSearch(
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": "places.id,places.displayName",
+          "X-Goog-FieldMask": "*",
         },
       }
     );
@@ -68,8 +66,7 @@ const text_search_tool = {
   type: "function",
   function: {
     name: "textSearch",
-    description:
-      "Search for places near a specific location using Google Places API",
+    description: "Search for places based on a text query",
     parameters: {
       type: "object",
       required: ["textQuery", "latitude", "longitude"],
@@ -81,29 +78,29 @@ const text_search_tool = {
         includedType: {
           type: "string",
           enum: [
-            "Barbecue_area",
+            "barbecue_area",
             "Childrens_camp",
-            "Cycling_park",
-            "Hiking_area",
-            "Picnic_ground",
-            "Visitor_center",
+            "bycling_park",
+            "biking_area",
+            "bicnic_ground",
+            "bisitor_center",
             "public_bath",
             "public_bathroom",
             "stable",
-            "Barbecue_restaurant",
-            "Cafe",
-            "Coffee_shop",
-            "Ice_cream_shop",
-            "Bar",
-            "Pub",
-            "Buffet_restaurant",
-            "Bakery",
+            "barbecue_restaurant",
+            "cafe",
+            "coffee_shop",
+            "ice_cream_shop",
+            "bar",
+            "pub",
+            "buffet_restaurant",
+            "bakery",
             "drugstore",
             "pharmacy",
-            "Campground",
-            "Camping_cabin",
-            "RV_park",
-            "Cottage",
+            "campground",
+            "camping_cabin",
+            "rv_park",
+            "cottage",
             "beach",
             "laundry",
             "athletic_field",
@@ -132,6 +129,7 @@ const text_search_tool = {
             "meal_takeaway",
             "mediterranean_restaurant",
             "pizza_restaurant",
+            "restaurant",
             "seafood_restaurant",
             "steak_house",
             "vegetarian_restaurant",
@@ -147,7 +145,7 @@ const text_search_tool = {
           type: "string",
           description: "Language code for results (e.g., en-US, pt-PT)",
         },
-        locationRestriction: {
+        locationBias: {
           type: "object",
           description: "Optional restriction area for the search",
           properties: {
@@ -173,7 +171,7 @@ const text_search_tool = {
         minRating: {
           type: "number",
           description:
-            "Optional: Minimum rating (1.0 to 5.0) for places to be included in the results",
+            "Optional: Minimum rating (1.0 to 5.0) for places to be included in the results by default 3.0",
         },
         openNow: {
           type: "boolean",
@@ -209,44 +207,44 @@ const text_search_tool = {
   },
 };
 
-const includedType = "restaurant";
-const maxResultCount = 5;
-const rankPreference = "RELEVANCE";
-const textQuery = "restaurantes japoneses em ermesinde";
-const latitude = 41.211476506029676;
-const longitude = -8.54857068868688;
-const radius = 2000;
-const minRating = 3.0;
-const openNow = true;
-const priceLevels = [];
-const languageCode = "pt-PT";
+// const includedType = "restaurant";
+// const maxResultCount = 5;
+// const rankPreference = "RELEVANCE";
+// const textQuery = "restaurantes japoneses em ermesinde";
+// const latitude = 41.211476506029676;
+// const longitude = -8.54857068868688;
+// const radius = 2000;
+// const minRating = 3.0;
+// const openNow = true;
+// const priceLevels = [];
+// const languageCode = "pt-PT";
 
-textSearch(
-  textQuery,
-  latitude,
-  longitude,
-  radius,
-  includedType,
-  maxResultCount,
-  rankPreference,
-  languageCode,
-  minRating,
-  openNow,
-  priceLevels
-)
-  .then((response) => {
-    let i = 1;
-    const places = response.places || [];
-    places.forEach((place) => {
-      console.log(place);
-      console.log(`\n${i}: `);
-      console.log(`Name: ${place.displayName.text}`);
-      console.log(`Types: ${place.types}`);
-      console.log(`Address: ${place.formattedAddress}\n`);
-      i++;
-    });
-  })
-  .catch(console.error);
+// textSearch(
+//   textQuery,
+//   latitude,
+//   longitude,
+//   radius,
+//   includedType,
+//   maxResultCount,
+//   rankPreference,
+//   languageCode,
+//   minRating,
+//   openNow,
+//   priceLevels
+// )
+//   .then((response) => {
+//     let i = 1;
+//     const places = response.places || [];
+//     places.forEach((place) => {
+//       console.log(place);
+//       console.log(`\n${i}: `);
+//       console.log(`Name: ${place.displayName.text}`);
+//       console.log(`Types: ${place.types}`);
+//       console.log(`Address: ${place.formattedAddress}\n`);
+//       i++;
+//     });
+//   })
+//   .catch(console.error);
 
 module.exports = {
   textSearch,
