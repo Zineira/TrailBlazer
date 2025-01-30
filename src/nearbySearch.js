@@ -49,7 +49,7 @@ async function nearbySearch(
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": "places.displayName, places.id", // Request all available fields
+          "X-Goog-FieldMask": "places.displayName,places.id", // Request all available fields
         },
       }
     );
@@ -90,9 +90,8 @@ const nearby_search_tool = {
           type: "string",
           enum: [
             "barbecue_area",
-            "Childrens_camp",
+            "childrens_camp",
             "bycling_park",
-            "biking_area",
             "bicnic_ground",
             "bisitor_center",
             "public_bath",

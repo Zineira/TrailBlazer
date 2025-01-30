@@ -2,6 +2,23 @@ const axios = require("axios");
 const dotenv = require("dotenv");
 dotenv.config();
 
+/**
+ * Search for places based on a text query using Google Places API v1
+ * @param {string} textQuery Text query to search for
+ * @param {number} latitude Latitude of the search center
+ * @param {number} longitude Longitude of the search center
+ * @param {number} [radius=1000] Search radius in meters
+ * @param {string} [includedType="restaurant"] Type of place to search for
+ * @param {number} [maxResultCount=5] Maximum number of results to return
+ * @param {string} [rankPreference="RELEVANCE"] Preference for ranking results by relevance or distance
+ * @param {string} [languageCode="pt-PT"] Language code for results
+ * @param {number} [minRating=3.0] Minimum rating (1.0 to 5.0) for places to be included in the results
+ * @param {boolean} [openNow=true] Whether to include only currently open places
+ * @param {string[]} [priceLevels] Filter places by price level
+ * @returns {Object} Places search results
+ * @throws {Error} When the API request fails
+ * @see https://developers.google.com/maps/documentation/places/web-service/search-text
+ **/
 async function textSearch(
   textQuery,
   latitude,

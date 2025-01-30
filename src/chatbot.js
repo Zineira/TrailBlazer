@@ -4,6 +4,7 @@ const readline = require("readline");
 const { nearbySearch, nearby_search_tool } = require("./nearbySearch"); // import das tools
 const { textSearch, text_search_tool } = require("./textSearch");
 const { geocodeAddress, geocoding_tool } = require("./geocoding");
+const { getPlaceDetails, place_details_tool } = require("./placesDetails");
 const openai = new OpenAI({
   apiKey: process.env.REACT_APP_OPEN_AI_API_KEY,
 });
@@ -20,7 +21,12 @@ const messages = [
   },
 ];
 
-tools = [nearby_search_tool, text_search_tool, geocoding_tool];
+tools = [
+  nearby_search_tool,
+  text_search_tool,
+  geocoding_tool,
+  place_details_tool,
+];
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -57,6 +63,9 @@ const callFunction = async (name, args) => {
       args.priceLevels
     );
   }
+  if (name === "getPlaceDetails") {
+    return await getPlaceDetails(args.placeId);
+  }
 };
 
 async function handleUserInput(userInput) {
@@ -65,49 +74,47 @@ async function handleUserInput(userInput) {
     messages.push({ role: "user", content: userInput });
     console.log("💬 Current Messages Array:", messages);
 
-    console.log("🤖 Calling OpenAI API...");
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: messages,
-      tools: tools,
-    });
-    console.log("✅ OpenAI Response:", completion.choices[0].message);
-
-    // Check if there's a tool call
-    console.log(completion.choices[0].message.tool_calls);
-    if (completion.choices[0].message.tool_calls) {
-      console.log(
-        "🔧 Tool Calls Detected:",
-        completion.choices[0].message.tool_calls
-      );
-
-      for (const toolCall of completion.choices[0].message.tool_calls) {
-        const name = toolCall.function.name;
-        const args = JSON.parse(toolCall.function.arguments);
-        console.log(`⚙️ Executing Tool: ${name}`, args);
-
-        const result = await callFunction(name, args);
-        console.log("📊 Tool Execution Result:", result);
-
-        messages.push(completion.choices[0].message);
-        console.log("💬 Updated Messages Array:", messages);
-        messages.push({
-          role: "tool",
-          tool_call_id: toolCall.id,
-          content: JSON.stringify(result),
-        });
-      }
-      const completion2 = await openai.chat.completions.create({
+    let calledTools = true;
+    while (calledTools) {
+      console.log("🤖 Calling OpenAI API...");
+      const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: messages,
         tools: tools,
       });
+      console.log("✅ OpenAI Response:", completion.choices[0].message);
 
-      console.log(completion2.choices[0].message.content);
-    } else {
-      // Handle regular chat responses
-      console.log(completion.choices[0].message.content);
-      messages.push(completion.choices[0].message);
+      // Check if there's a tool call
+      console.log(completion.choices[0].message.tool_calls);
+      if (completion.choices[0].message.tool_calls) {
+        console.log(
+          "🔧 Tool Calls Detected:",
+          completion.choices[0].message.tool_calls
+        );
+
+        for (const toolCall of completion.choices[0].message.tool_calls) {
+          const name = toolCall.function.name;
+          const args = JSON.parse(toolCall.function.arguments);
+          console.log(`⚙️ Executing Tool: ${name}`, args);
+
+          const result = await callFunction(name, args);
+          console.log("📊 Tool Execution Result:", JSON.stringify(result));
+
+          messages.push(completion.choices[0].message);
+          messages.push({
+            role: "tool",
+            tool_call_id: toolCall.id,
+            content: JSON.stringify(result),
+          });
+          console.log("💬 Updated Messages Array:", messages);
+          calledTools = true;
+        }
+      } else {
+        // Handle regular chat responses
+        console.log(completion.choices[0].message.content);
+        messages.push(completion.choices[0].message);
+        calledTools = false;
+      }
     }
 
     return true;
