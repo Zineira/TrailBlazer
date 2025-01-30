@@ -30,8 +30,8 @@ async function nearbySearch(
     locationRestriction: {
       circle: {
         center: {
-          latitude: 41.211,
-          longitude: -8.548,
+          latitude: latitude,
+          longitude: longitude,
         },
         radius: radius,
       },
@@ -49,7 +49,7 @@ async function nearbySearch(
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": apiKey,
-          "X-Goog-FieldMask": "places.displayName, places.name", // Request all available fields
+          "X-Goog-FieldMask": "places.displayName, places.id", // Request all available fields
         },
       }
     );

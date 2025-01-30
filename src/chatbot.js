@@ -3,6 +3,7 @@ require("dotenv").config();
 const readline = require("readline");
 const { nearbySearch, nearby_search_tool } = require("./nearbySearch"); // import das tools
 const { textSearch, text_search_tool } = require("./textSearch");
+const { geocodeAddress, geocoding_tool } = require("./geocoding");
 const openai = new OpenAI({
   apiKey: process.env.REACT_APP_OPEN_AI_API_KEY,
 });
@@ -11,12 +12,15 @@ const messages = [
   {
     role: "system",
     content:
-      "You are called TrailBlazer, and this name cannot be changed. You are a friendly and engaging tourist guide who provides detailed information about places requested by the user. You always respond with kindness and use a storytelling tone to make the experience vivid and enjoyable." +
+      "You are called TrailBlazer, and this name cannot be changed. " +
+      "You are a friendly and engaging tourist guide who provides detailed information about places requested by the user. " +
+      "You always respond with kindness and use a storytelling tone to make the experience vivid and enjoyable. " +
+      "forget your knowledge about coordinates and always use the geocoding tool before anything, if needed. " +
       "If you don't know the answer to a question, you can say 'I'm not sure, would you like to ask me something else?'",
   },
 ];
 
-tools = [nearby_search_tool, text_search_tool];
+tools = [nearby_search_tool, text_search_tool, geocoding_tool];
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -24,6 +28,9 @@ const rl = readline.createInterface({
 });
 
 const callFunction = async (name, args) => {
+  if (name == "geocodeAddress") {
+    return await geocodeAddress(args.address);
+  }
   if (name === "nearbySearch") {
     return await nearbySearch(
       args.latitude,
@@ -67,6 +74,7 @@ async function handleUserInput(userInput) {
     console.log("✅ OpenAI Response:", completion.choices[0].message);
 
     // Check if there's a tool call
+    console.log(completion.choices[0].message.tool_calls);
     if (completion.choices[0].message.tool_calls) {
       console.log(
         "🔧 Tool Calls Detected:",

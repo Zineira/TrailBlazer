@@ -2,6 +2,26 @@ const axios = require("axios");
 const dotenv = require("dotenv");
 dotenv.config();
 
+const geocoding_tool = {
+  type: "function",
+  function: {
+    name: "geocodeAddress",
+    description:
+      "Convert an address into coordinates using Google Maps Geocoding API",
+    parameters: {
+      type: "object",
+      properties: {
+        address: {
+          type: "string",
+          description:
+            "The address to geocode (e.g., 'Rua de Santa Catarina, Porto'),(e.g., restaurant name)",
+        },
+      },
+      required: ["address"],
+    },
+  },
+};
+
 async function geocodeAddress(address) {
   const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
@@ -73,39 +93,38 @@ async function reverseGeocode(latitude, longitude) {
   }
 }
 
-const mockParameters = {
-  addresses: ["Ermesinde", "Sakurai Sushi Bar", "Taberna Restinga"],
-  coordinates: [
-    { latitude: 41.1579, longitude: -8.6291 }, // Porto
-    { latitude: 41.1496, longitude: -8.6109 }, // Santa Catarina
-    { latitude: 41.1456, longitude: -8.616 }, // Aliados
-  ],
-};
+// const mockParameters = {
+//   addresses: ["Ermesinde", "Sakurai Sushi Bar", "Taberna Restinga"],
+//   coordinates: [
+//     { latitude: 41.1579, longitude: -8.6291 }, // Porto
+//     { latitude: 41.1496, longitude: -8.6109 }, // Santa Catarina
+//     { latitude: 41.1456, longitude: -8.616 }, // Aliados
+//   ],
+// };
 
-async function testGeocoding() {
-  try {
-    // Test address to coordinates
-    console.log("🏁 Testing Geocoding...");
-    const locationResult = await geocodeAddress(mockParameters.addresses[2]);
-    console.log("📍 Location Result:", locationResult);
+// async function testGeocoding() {
+//   try {
+//     // Test address to coordinates
+//     console.log("🏁 Testing Geocoding...");
+//     const locationResult = await geocodeAddress(mockParameters.addresses[2]);
+//     console.log("📍 Location Result:", locationResult);
 
-    // Test coordinates to address
-    console.log("\n🏁 Testing Reverse Geocoding...");
-    const addressResult = await reverseGeocode(
-      mockParameters.coordinates[0].latitude,
-      mockParameters.coordinates[0].longitude
-    );
-    console.log("📍 Address Result:", addressResult);
-  } catch (error) {
-    console.error("❌ Test Error:", error);
-  }
-}
+//     // Test coordinates to address
+//     console.log("\n🏁 Testing Reverse Geocoding...");
+//     const addressResult = await reverseGeocode(
+//       mockParameters.coordinates[0].latitude,
+//       mockParameters.coordinates[0].longitude
+//     );
+//     console.log("📍 Address Result:", addressResult);
+//   } catch (error) {
+//     console.error("❌ Test Error:", error);
+//   }
+// }
 
-testGeocoding();
+// testGeocoding();
 
 module.exports = {
+  geocoding_tool,
   geocodeAddress,
   reverseGeocode,
-  mockParameters,
-  testGeocoding,
 };
