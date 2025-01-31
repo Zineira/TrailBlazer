@@ -92,6 +92,8 @@ async function handleUserInput(userInput) {
           completion.choices[0].message.tool_calls
         );
 
+        const toolResponses = [];
+
         for (const toolCall of completion.choices[0].message.tool_calls) {
           const name = toolCall.function.name;
           const args = JSON.parse(toolCall.function.arguments);
@@ -100,15 +102,21 @@ async function handleUserInput(userInput) {
           const result = await callFunction(name, args);
           console.log("📊 Tool Execution Result:", JSON.stringify(result));
 
-          messages.push(completion.choices[0].message);
-          messages.push({
+          toolResponses.push({
             role: "tool",
             tool_call_id: toolCall.id,
             content: JSON.stringify(result),
           });
-          console.log("💬 Updated Messages Array:", messages);
-          calledTools = true;
         }
+
+        // Push assistant message first
+        messages.push(completion.choices[0].message);
+
+        // Then push all tool responses
+        toolResponses.forEach((response) => messages.push(response));
+
+        console.log("💬 Updated Messages Array:", messages);
+        calledTools = true;
       } else {
         // Handle regular chat responses
         console.log(completion.choices[0].message.content);

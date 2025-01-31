@@ -22,7 +22,7 @@ const getPlaceDetails = async (placeId) => {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": apikey,
         "X-Goog-FieldMask":
-          "displayName,formattedAddress,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,priceRange,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri",
+          "displayName,formattedAddress,currentOpeningHours,nationalPhoneNumber,priceRange,rating,regularOpeningHours,userRatingCount,websiteUri",
       },
     });
     console.log(response.data);
