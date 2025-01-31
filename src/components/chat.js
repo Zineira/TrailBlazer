@@ -10,7 +10,7 @@ import {
 import "./chat.css";
 import { handleUserInput } from "../services/chatbot";
 
-const Chat = () => {
+const Chat = (props) => {
   const [uiMessages, setUiMessages] = useState([]);
   const [llmMessages, setLlmMessages] = useState([
     {
@@ -41,8 +41,31 @@ const Chat = () => {
     setUiMessages(uiMessages);
   }, [llmMessages]);
 
-  async function handleSend(message) {
-    const _llmMessages = await handleUserInput(message, [...llmMessages]);
+  useEffect(() => {
+    let markers = [];
+    for (const message of llmMessages) {
+      if (message.role != "tool") continue;
+      const toolResponse = JSON.parse(message.content);
+      if (!toolResponse.places) continue;
+      markers = toolResponse.places.map((place) => {
+        return {
+          id: place.id,
+          position: {
+            lat: place.location.latitude,
+            lng: place.location.longitude,
+          },
+          title: place.displayName.text,
+        };
+      });
+    }
+    const setMarkers = props.setMarkers;
+    setMarkers(markers);
+  }, [props.setMarkers, llmMessages]);
+
+  async function handleSend(content) {
+    let _llmMessages = [...llmMessages, { role: "user", content }];
+    setLlmMessages(_llmMessages);
+    _llmMessages = await handleUserInput([..._llmMessages]);
     setLlmMessages(_llmMessages);
   }
 

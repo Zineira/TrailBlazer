@@ -4,10 +4,12 @@ import Chat from "./components/chat";
 import "./App.css";
 
 function App() {
+  const [markers, setMarkers] = React.useState([]);
+
   return (
     <div className="app-container">
-      <MapComponent />
-      <Chat />
+      <MapComponent markers={markers} />
+      <Chat setMarkers={setMarkers} />
     </div>
   );
 }

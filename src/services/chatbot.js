@@ -24,7 +24,7 @@ const rl = readline.createInterface({
 });
 */
 const callFunction = async (name, args) => {
-  if (name == "geocodeAddress") {
+  if (name === "geocodeAddress") {
     return await geocodeAddress(args.address);
   }
   if (name === "nearbySearch") {
@@ -58,10 +58,10 @@ const callFunction = async (name, args) => {
   }
 };
 
-export async function handleUserInput(userInput, messages) {
+export async function handleUserInput(messages) {
   try {
-    console.log("📝 User Input Received:", userInput);
-    messages.push({ role: "user", content: userInput });
+    //console.log("📝 User Input Received:", userInput);
+    //messages.push({ role: "user", content: userInput });
     console.log("💬 Current Messages Array:", messages);
 
     let calledTools = true;
@@ -118,7 +118,7 @@ export async function handleUserInput(userInput, messages) {
     return messages;
   } catch (error) {
     console.error("Error:", error.message);
-    return false;
+    return messages;
   }
 }
 

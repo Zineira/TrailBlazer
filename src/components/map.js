@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useEffect } from "react";
 import {
   GoogleMap,
   useJsApiLoader,
@@ -16,7 +16,7 @@ const defaultCenter = {
   lng: -8.720355,
 };
 
-function MapComponent() {
+function MapComponent(props) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
@@ -25,8 +25,15 @@ function MapComponent() {
   const [map, setMap] = useState(null);
   const [center, setCenter] = useState(defaultCenter);
   const [selectedMarker, setSelectedMarker] = useState(null);
-  const [markers, setMarkers] = useState([]);
+  const [markers, setMarkers] = useState(props.markers || []);
   const [zoom, setZoom] = useState(15);
+
+  useEffect(() => {
+    setMarkers(props.markers);
+    if (map && props.markers.length > 0) {
+      map.panTo(props.markers[props.markers.length - 1].position);
+    }
+  }, [props.markers]);
 
   // Map load handler
   const onLoad = useCallback((map) => {
