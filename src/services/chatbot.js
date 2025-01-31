@@ -2,7 +2,7 @@ const OpenAI = require("openai");
 //require("dotenv").config();
 //const readline = require("readline");
 const { nearbySearch, nearby_search_tool } = require("./nearbySearch"); // import das tools
-const { textSearch, text_search_tool } = require("./textSearch");
+// const { textSearch, text_search_tool } = require("./textSearch");
 const { geocodeAddress, geocoding_tool } = require("./geocoding");
 const { getPlaceDetails, place_details_tool } = require("./placesDetails");
 const openai = new OpenAI({
@@ -12,7 +12,7 @@ const openai = new OpenAI({
 
 const tools = [
   nearby_search_tool,
-  text_search_tool,
+  //text_search_tool,
   geocoding_tool,
   place_details_tool,
 ];
@@ -38,21 +38,21 @@ const callFunction = async (name, args) => {
       args.language
     );
   }
-  if (name === "textSearch") {
-    return await textSearch(
-      args.textQuery,
-      args.latitude,
-      args.longitude,
-      args.radius,
-      args.includedType,
-      args.maxResultCount,
-      args.rankPreference,
-      args.languageCode,
-      args.minRating,
-      args.openNow,
-      args.priceLevels
-    );
-  }
+  // if (name === "textSearch") {
+  //   return await textSearch(
+  //     args.textQuery,
+  //     args.latitude,
+  //     args.longitude,
+  //     args.radius,
+  //     args.includedType,
+  //     args.maxResultCount,
+  //     args.rankPreference,
+  //     args.languageCode,
+  //     args.minRating,
+  //     args.openNow,
+  //     args.priceLevels
+  //   );
+  // }
   if (name === "getPlaceDetails") {
     return await getPlaceDetails(args.placeId);
   }

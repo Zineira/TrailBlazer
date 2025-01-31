@@ -5,12 +5,15 @@ import {
   ChatContainer,
   MessageList,
   Message,
+  MessageHtmlContent,
   MessageInput,
 } from "@chatscope/chat-ui-kit-react";
 import "./chat.css";
 import { handleUserInput } from "../services/chatbot";
+import ReactMarkdown from "react-markdown";
 
 const Chat = (props) => {
+  const [waiting, setWaiting] = useState(false);
   const [uiMessages, setUiMessages] = useState([]);
   const [llmMessages, setLlmMessages] = useState([
     {
@@ -62,6 +65,12 @@ const Chat = (props) => {
     setMarkers(markers);
   }, [props.setMarkers, llmMessages]);
 
+  useEffect(() => {
+    if (llmMessages.length === 0) return;
+    const lastMessage = llmMessages[llmMessages.length - 1];
+    setWaiting(lastMessage.role === "user");
+  }, [llmMessages]);
+
   async function handleSend(content) {
     let _llmMessages = [...llmMessages, { role: "user", content }];
     setLlmMessages(_llmMessages);
@@ -69,14 +78,70 @@ const Chat = (props) => {
     setLlmMessages(_llmMessages);
   }
 
+  const loading = uiMessages.length > 0 && waiting;
   return (
     <div className="chat-wrapper">
       <MainContainer>
         <ChatContainer>
-          <MessageList>
+          <MessageList
+            autoScrollToBottom={true}
+            scrollBehavior="smooth"
+            loadingMore={loading}
+            loadingMorePosition="bottom"
+          >
             {uiMessages.map((message, index) => (
-              <Message key={index} model={message} />
+              <Message.CustomContent key={index} model={message}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent:
+                      message.sender == "user" ? "flex-end" : "flex-start",
+                  }}
+                >
+                  <div
+                    style={{
+                      backgroundColor:
+                        message.sender == "user" ? "#6ea9d7" : "#c6e3fa",
+                      padding: "5px",
+                      marginTop: "5px",
+                      marginBottom: "5px",
+                      borderRadius:
+                        message.sender == "user"
+                          ? ".7em 0 0 .7em"
+                          : "0 .7em .7em 0",
+                      textAlign: "left",
+                      fontSize: "12px",
+                      maxWidth: "80%",
+                      display: "left",
+                    }}
+                  >
+                    <ReactMarkdown
+                      components={{
+                        ol: ({ node, ...props }) => (
+                          <ol
+                            style={{ marginLeft: "20px", paddingLeft: "0" }}
+                            {...props}
+                          />
+                        ),
+                      }}
+                    >
+                      {message.message}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              </Message.CustomContent>
             ))}
+            {loading && (
+              <Message
+                style={{
+                  fontSize: "12px",
+                }}
+                model={{
+                  message: "🤖 Thinking...",
+                  direction: "incoming",
+                }}
+              />
+            )}
           </MessageList>
           <MessageInput placeholder="Type message here" onSend={handleSend} />
         </ChatContainer>
