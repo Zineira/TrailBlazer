@@ -1,6 +1,6 @@
-const axios = require("axios");
-const dotenv = require("dotenv");
-dotenv.config();
+import axios from "axios";
+// const dotenv = require("dotenv");
+// dotenv.config();
 
 /**
  * Search for places nearby using Google Places API v1
@@ -9,7 +9,7 @@ dotenv.config();
  * @param {number} params.radius Radius in meters
  * @param {string} apiKey Google Maps API key
  */
-async function nearbySearch(
+export async function nearbySearch(
   latitude = 41.211,
   longitude = -8.548,
   radius = 1000,
@@ -63,7 +63,7 @@ async function nearbySearch(
   }
 }
 
-const nearby_search_tool = {
+export const nearby_search_tool = {
   type: "function",
   function: {
     name: "nearbySearch",
@@ -201,8 +201,3 @@ const nearby_search_tool = {
 //     });
 //   })
 //   .catch(console.error);
-
-module.exports = {
-  nearbySearch,
-  nearby_search_tool,
-};

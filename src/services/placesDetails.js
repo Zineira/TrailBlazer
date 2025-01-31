@@ -1,6 +1,6 @@
-const axios = require("axios");
-const dotenv = require("dotenv");
-dotenv.config();
+import axios from "axios";
+// const dotenv = require("dotenv");
+// dotenv.config();
 
 const apikey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
@@ -9,7 +9,7 @@ const apikey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
  * @param {string} placeId Place ID
  * @returns {Object} Place details
  */
-const getPlaceDetails = async (placeId) => {
+export const getPlaceDetails = async (placeId) => {
   try {
     if (!placeId) {
       throw new Error("Place ID is required");
@@ -33,7 +33,7 @@ const getPlaceDetails = async (placeId) => {
   }
 };
 
-const place_details_tool = {
+export const place_details_tool = {
   type: "function",
   function: {
     name: "getPlaceDetails",
@@ -49,9 +49,4 @@ const place_details_tool = {
       required: ["placeId"],
     },
   },
-};
-
-module.exports = {
-  place_details_tool,
-  getPlaceDetails,
 };

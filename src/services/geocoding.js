@@ -1,8 +1,8 @@
-const axios = require("axios");
-const dotenv = require("dotenv");
-dotenv.config();
+import axios from "axios";
+// const dotenv = require("dotenv");
+// dotenv.config();
 
-const geocoding_tool = {
+export const geocoding_tool = {
   type: "function",
   function: {
     name: "geocodeAddress",
@@ -22,7 +22,7 @@ const geocoding_tool = {
   },
 };
 
-async function geocodeAddress(address) {
+export async function geocodeAddress(address) {
   const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
   if (!apiKey) {
@@ -122,9 +122,3 @@ async function reverseGeocode(latitude, longitude) {
 // }
 
 // testGeocoding();
-
-module.exports = {
-  geocoding_tool,
-  geocodeAddress,
-  reverseGeocode,
-};

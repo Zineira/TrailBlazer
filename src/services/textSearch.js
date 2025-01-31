@@ -1,6 +1,6 @@
-const axios = require("axios");
-const dotenv = require("dotenv");
-dotenv.config();
+import axios from "axios";
+// const dotenv = require("dotenv");
+// dotenv.config();
 
 /**
  * Search for places based on a text query using Google Places API v1
@@ -19,7 +19,7 @@ dotenv.config();
  * @throws {Error} When the API request fails
  * @see https://developers.google.com/maps/documentation/places/web-service/search-text
  **/
-async function textSearch(
+export async function textSearch(
   textQuery,
   latitude,
   longitude,
@@ -79,7 +79,7 @@ async function textSearch(
   }
 }
 
-const text_search_tool = {
+export const text_search_tool = {
   type: "function",
   function: {
     name: "textSearch",
@@ -262,8 +262,3 @@ const text_search_tool = {
 //     });
 //   })
 //   .catch(console.error);
-
-module.exports = {
-  textSearch,
-  text_search_tool,
-};

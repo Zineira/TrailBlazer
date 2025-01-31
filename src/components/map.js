@@ -12,13 +12,9 @@ const containerStyle = {
 };
 
 const defaultCenter = {
-  lat: 41.1496,
-  lng: -8.6109,
+  lat: 41.268808,
+  lng: -8.720355,
 };
-
-const defaultZoom = 13;
-
-// Define libraries consistently
 
 function MapComponent() {
   const { isLoaded, loadError } = useJsApiLoader({
@@ -30,7 +26,7 @@ function MapComponent() {
   const [center, setCenter] = useState(defaultCenter);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [markers, setMarkers] = useState([]);
-  const [zoom, setZoom] = useState(defaultZoom);
+  const [zoom, setZoom] = useState(15);
 
   // Map load handler
   const onLoad = useCallback((map) => {
@@ -45,6 +41,9 @@ function MapComponent() {
   // Handle marker click
   const handleMarkerClick = (marker) => {
     setSelectedMarker(marker);
+    if (map) {
+      map.panTo(marker.position);
+    }
   };
 
   // Handle map click to add new marker
@@ -58,8 +57,10 @@ function MapComponent() {
       title: `Location ${markers.length + 1}`,
     };
     setMarkers([...markers, newMarker]);
+    if (map) {
+      map.panTo(newMarker.position);
+    }
   };
-
   // Handle zoom change
   const handleZoomChanged = () => {
     if (map) {
@@ -80,13 +81,14 @@ function MapComponent() {
       onClick={handleMapClick}
       onZoomChanged={handleZoomChanged}
       options={{
-        zoomControl: true,
-        streetViewControl: true,
-        mapTypeControl: true,
-        fullscreenControl: true,
-        minZoom: 3,
+        zoomControl: false,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        minZoom: 4,
         maxZoom: 18,
       }}
+      panTo={center}
     >
       {/* Render markers */}
       {markers.map((marker) => (
