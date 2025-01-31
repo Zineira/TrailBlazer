@@ -1,13 +1,15 @@
-import "./App.css";
 import React from "react";
 import MapComponent from "./components/map";
+import Chat from "./components/chat";
+import "./App.css";
 
-const App = () => {
+function App() {
   return (
     <div className="app-container">
       <MapComponent />
+      <Chat />
     </div>
   );
-};
+}
 
 export default App;

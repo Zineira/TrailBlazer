@@ -7,7 +7,7 @@ import {
 } from "@react-google-maps/api";
 
 const containerStyle = {
-  width: "100%",
+  width: "70%", // Update width to take remaining space
   height: "100vh",
 };
 
@@ -16,30 +16,26 @@ const defaultCenter = {
   lng: -8.6109,
 };
 
+const defaultZoom = 13;
+
 // Define libraries consistently
-const libraries = ["places"];
 
 function MapComponent() {
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-    libraries: libraries,
   });
 
   const [map, setMap] = useState(null);
   const [center, setCenter] = useState(defaultCenter);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [markers, setMarkers] = useState([]);
+  const [zoom, setZoom] = useState(defaultZoom);
 
   // Map load handler
-  const onLoad = useCallback(
-    (map) => {
-      const bounds = new window.google.maps.LatLngBounds(center);
-      map.fitBounds(bounds);
-      setMap(map);
-    },
-    [center]
-  );
+  const onLoad = useCallback((map) => {
+    setMap(map);
+  }, []);
 
   // Map unload handler
   const onUnmount = useCallback(() => {
@@ -64,6 +60,13 @@ function MapComponent() {
     setMarkers([...markers, newMarker]);
   };
 
+  // Handle zoom change
+  const handleZoomChanged = () => {
+    if (map) {
+      setZoom(map.getZoom());
+    }
+  };
+
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading maps...</div>;
 
@@ -71,15 +74,18 @@ function MapComponent() {
     <GoogleMap
       mapContainerStyle={containerStyle}
       center={center}
-      zoom={13}
+      zoom={zoom}
       onLoad={onLoad}
       onUnmount={onUnmount}
       onClick={handleMapClick}
+      onZoomChanged={handleZoomChanged}
       options={{
         zoomControl: true,
         streetViewControl: true,
         mapTypeControl: true,
         fullscreenControl: true,
+        minZoom: 3,
+        maxZoom: 18,
       }}
     >
       {/* Render markers */}
