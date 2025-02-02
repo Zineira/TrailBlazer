@@ -1,14 +1,24 @@
-Run the REACT App
+# 🚀 MapBot - TrailBlazer 
 
-### `npm start`
+## 📌 Requisitos  
+Para utilizar este projeto, é necessário ter as seguintes **API Keys**:  
+- **OpenAI API Key** ([Criar aqui](https://platform.openai.com/settings/organization/api-keys))  
+- **Google Maps API Key** ([Obter aqui](https://console.cloud.google.com/google/maps-apis/credentials))  
 
-Copy the .env.example to your .env and then add you API keys
+## 📥 Instalação  
 
-### `cp .env.example .env`
-
-Test the ChatBot
-
-### `node chatbot.js`
-
-1-Try asking about the weather.<br />
-2-Ask about Restaurants
+1. **Clone o repositório:**  
+   ```sh
+   git clone https://github.com/Zineira/chatbot.git
+   cd chatbot-main
+   ```
+2. **Set your API keys:**
+Copy the .env.example to your .env and then add your API keys to your .env file
+(The key must be inside quotation marks)
+   ```sh
+   cp .env.example .env
+   ```
+3. **Run the Project**
+   ```sh
+   npm start
+   ```
