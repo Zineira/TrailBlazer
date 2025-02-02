@@ -11,14 +11,17 @@ Para utilizar este projeto, é necessário ter as seguintes **API Keys**:
    ```sh
    git clone https://github.com/Zineira/chatbot.git
    cd chatbot-main
+2. **install dependencies**
+   ```sh
+   npm install
    ```
-2. **Set your API keys:**
+3. **Set your API keys:**
 Copy the .env.example to your .env and then add your API keys to your .env file
 (The key must be inside quotation marks)
    ```sh
    cp .env.example .env
    ```
-3. **Run the Project**
+4. **Run the Project**
    ```sh
    npm start
    ```
